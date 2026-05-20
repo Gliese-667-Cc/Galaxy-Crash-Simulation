@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import (QApplication)
 from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 from pyqtgraph import mkPen, mkBrush
-import numpy as np
 
 class Galaxy:
     def __init__(self, mass, a_scale, pos, vel, disksize, theta, phi, n):
