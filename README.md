@@ -1,13 +1,13 @@
-#Galactic Collision Simulator
+# Galactic Collision Simulator
 
-##Abstract
+## Abstract
 This simulation models the collision of two galaxies, incorporating the complex 
 effects of gravitational friction during star-star interactions alongside the 
 physical influence of dark matter halos. Derived from established astrophysical 
 research, the implementation utilizes a simplified model of galactic cores driven 
 \by Newtonian mechanics to accurately visualize these massive cosmic events.
 ----------------------------------------------------------------------------------
-##Current Implementation
+## Current Implementation
 The current iteration of the codebase is developed entirely in Python, prioritizing 
 rapid prototyping and mathematical accuracy:
 
@@ -17,7 +17,7 @@ Physics & Computation: Leverages NumPy for highly efficient numerical operations
 Visualization: Utilizes PyQtGraph for real-time rendering, plotting, and interactive
                graphical output.
 ------------------------------------------------------------------------------------
-##Vision & Future Roadmap
+## Vision & Future Roadmap
 Future development is focused on significantly enhancing both the computational depth 
 and rendering performance of the engine. The planned roadmap includes:
 
