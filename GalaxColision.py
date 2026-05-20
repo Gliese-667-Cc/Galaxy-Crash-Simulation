@@ -79,7 +79,7 @@ class Galaxy:
         if massFact == 1.0:
             return
         self.mass *= massFact
-        self.a *= (massFact ** 0.333) # Scale length increases slightly with massclass orbit:
+        self.a *= (massFact ** 0.333) # Scale length increases slightly with mass to keep density realistic
 
 class orbit:
     def __init__(self, energy, rp, tp, ecc, m1, m2, pos1, pos2, vel1, vel2,):
@@ -187,8 +187,8 @@ class GUI(GalaxySimGUI):
         self.timelabel.setText("Time: ")
 
     def MakeGalaxy(self):
-        galmass = 4.8
-        a_scale = 1.5 
+        base_galmass = 4.8
+        base_a_scale = 1.5  
         disksize = 3.0
         pos = np.full((3,1),0.0)
         vel = np.full((3,1),0.0)
@@ -200,12 +200,14 @@ class GUI(GalaxySimGUI):
 
         galn = int(0.5*self.star_count.value())
         compn = int(0.5*self.star_count.value())
-        
-        self.gal = Galaxy(galmass, a_scale, pos, vel, disksize, red_theta, red_phi, galn)
-        self.comp = Galaxy(galmass, a_scale, pos, vel, disksize, green_theta, green_phi, compn)
-
         massrat = float(self.red_mass.value())
-        self.gal.scalemass(massrat)
+        red_mass_final = base_galmass * massrat
+        
+        # Scale length increases slightly with mass to keep density realistic
+        red_a_scale = base_a_scale * (massrat ** 0.333)
+
+        self.gal = Galaxy(red_mass_final, red_a_scale, pos, vel, disksize, red_theta, red_phi, galn)
+        self.comp = Galaxy(base_galmass, base_a_scale, pos, vel, disksize, green_theta, green_phi, compn)
 
     def MakeOrbit(self):
         energy = 0.0
@@ -229,8 +231,6 @@ class GUI(GalaxySimGUI):
         
         self.graphicsView.addItem(Gal)
         self.graphicsView.addItem(Comp)
-        self.gal.InitStar() 
-        self.comp.InitStar()
         self.graphicsView.plotItem.plot(self.gal.spos[0,:], self.gal.spos[1,:], pen=None, symbol='t1', symbolSize=3, symbolPen=self.pen1)
         self.graphicsView.plotItem.plot(self.comp.spos[0,:], self.comp.spos[1,:], pen=None, symbol='t1', symbolSize=3, symbolPen=self.pen6)
         dist = 3.5 * np.linalg.norm(self.gal.pos - self.comp.pos)
@@ -267,13 +267,11 @@ class GUI(GalaxySimGUI):
         scale = max(0.02, min(1.0, dist_now / 5.0))
         dtime = base_dt * scale
 
-        # --- SYMPLECTIC STEP 1: Half-step position update ---
         self.gal.pos += self.gal.vel * (0.5 * dtime)
         self.comp.pos += self.comp.vel * (0.5 * dtime)
         self.gal.spos += self.gal.svel * (0.5 * dtime)
         self.comp.spos += self.comp.svel * (0.5 * dtime)
 
-        # --- SYMPLECTIC STEP 2: Accelerations at half-step positions ---
         a_g = self.comp.get_gravity(self.gal.pos)
         a_c = self.gal.get_gravity(self.comp.pos)
 
@@ -290,13 +288,11 @@ class GUI(GalaxySimGUI):
         self.gal.sacc = self.gal.get_gravity(self.gal.spos) + self.comp.get_gravity(self.gal.spos)
         self.comp.sacc = self.comp.get_gravity(self.comp.spos) + self.gal.get_gravity(self.comp.spos)
 
-        # --- SYMPLECTIC STEP 3: Full-step velocity update ---
         self.gal.vel += a_g * dtime
         self.comp.vel += a_c * dtime
         self.gal.svel += self.gal.sacc * dtime
         self.comp.svel += self.comp.sacc * dtime
 
-        # --- SYMPLECTIC STEP 4: Final half-step position update ---
         self.gal.pos += self.gal.vel * (0.5 * dtime)
         self.comp.pos += self.comp.vel * (0.5 * dtime)
         self.gal.spos += self.gal.svel * (0.5 * dtime)
@@ -306,10 +302,10 @@ class GUI(GalaxySimGUI):
         dist = 3.5 * np.linalg.norm(self.gal.pos - self.comp.pos)
         vel = 250 * np.linalg.norm(self.gal.vel - self.comp.vel)
 
-        if self.cb_red_centered.isChecked():
+        if self.cb_green_centered.isChecked():
             self.graphicsView.setXRange(self.gal.pos[0,0]-20, self.gal.pos[0,0]+20)
             self.graphicsView.setYRange(self.gal.pos[1,0]-20, self.gal.pos[1,0]+20)
-        if self.cb_green_centered.isChecked():
+        if self.cb_red_centered.isChecked():
             self.graphicsView.setXRange(self.comp.pos[0,0]-20, self.comp.pos[0,0]+20)
             self.graphicsView.setYRange(self.comp.pos[1,0]-20, self.comp.pos[1,0]+20)
 
@@ -387,4 +383,3 @@ if __name__ == '__main__':
     window = GUI() 
     window.show()
     sys.exit(app.exec_())
-
